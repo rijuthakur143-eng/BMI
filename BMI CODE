@@ -1,0 +1,113 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Create empty DataFrame
+dta = pd.DataFrame(columns=['Name', 'Weight', 'Height', 'BMI', 'Status'])
+
+def calculate_bmi(weight, height):
+    bmi = weight / (height ** 2)
+    if bmi < 18.5:
+        status = "Under Weight"
+    elif bmi < 24.9:
+        status = "Normal"
+    elif bmi < 29.9:
+        status = "Over Weight"
+    else:
+        status = "Obese"
+    return round(bmi, 2), status
+
+
+while True:
+    print(" BMI Calculator Menu ")
+    print("1. Add Person")
+    print("2. Check BMI")
+    print("3. Show Details")
+    print("4. Visual Representation")
+    print("5. Show All Data")
+    print("6. Exit")
+
+    choice = int(input("Enter your choice: "))
+
+
+    if choice == 1:
+        name = input("Enter Name: ")
+        weight = float(input("Enter Weight (kg): "))
+        height = float(input("Enter Height (meter): "))
+
+        bmi, status = calculate_bmi(weight, height)
+
+        new_row = pd.DataFrame({
+            'Name': [name],
+            'Weight': [weight],
+            'Height': [height],
+            'BMI': [bmi],
+            'Status': [status]
+        })
+
+        dta = pd.concat([dta, new_row], ignore_index=True)
+        dta.to_csv("bmi_record.csv", index=False)
+
+        print("Record added successfully!")
+
+    
+    elif choice == 2:
+        name = input("Enter Name to check BMI: ")
+        record = dta[dta['Name'] == name]
+
+        if not record.empty:
+            print("BMI:", record['BMI'].values[0])
+            print("Status:", record['Status'].values[0])
+        else:
+            print("Record not found!")
+
+    
+    elif choice == 3:
+        name = input("Enter Name to show details: ")
+        record = dta[dta['Name'] == name]
+
+        if not record.empty:
+            print(record)
+        else:
+            print("Record not found!")
+
+    
+    elif choice == 4:
+        if dta.empty:
+            print("No data available for visualization!")
+        else:
+            print("1. Bar Chart")
+            print("2. Line Graph")
+            v_choice = int(input("Enter your choice: "))
+
+            if v_choice == 1:
+                plt.bar(dta['Name'], dta['BMI'], color='skyblue')
+                plt.xlabel("Name")
+                plt.ylabel("BMI")
+                plt.title("BMI Bar Chart")
+                plt.show()
+
+            elif v_choice == 2:
+                plt.plot(dta['Name'], dta['BMI'], marker='o', linestyle='-', color='green')
+                plt.xlabel("Name")
+                plt.ylabel("BMI")
+                plt.title("BMI Line Graph")
+                plt.show()
+
+            else:
+                print("Invalid visualization choice!")
+
+    
+    elif choice == 5:
+        if dta.empty:
+            print("No records available!")
+        else:
+            print(" All BMI Records ")
+            print(dta)
+
+    
+    elif choice == 6:
+        print("Exiting program... All data saved.")
+        break
+
+    else:
+        print("Invalid choice! Please try again.")
