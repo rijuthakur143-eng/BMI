@@ -1,9 +1,20 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Create empty DataFrame
-dta = pd.DataFrame(columns=['Name', 'Weight', 'Height', 'BMI', 'Status'])
+Flag = 0    #to decide if we have any previous data or not.
 
+# Exception handling
+try:
+    dta = pd.read_csv("bmi_record.csv",sep=",")
+    Flag = 1
+except FileNotFoundError:
+    Flag = 0
+
+# If Flag is zero than creating an empty dataframe
+if Flag == 0:
+    dta = pd.DataFrame(columns=['Name', 'Weight', 'Height', 'BMI', 'Status'])
+
+# BMI calculation function
 def calculate_bmi(weight, height):
     bmi = weight / (height ** 2)
     if bmi < 18.5:
@@ -16,19 +27,23 @@ def calculate_bmi(weight, height):
         status = "Obese"
     return round(bmi, 2), status
 
-
 while True:
+    print()
+    print("_______________________________")
     print(" BMI Calculator Menu ")
     print("1. Add Person")
     print("2. Check BMI")
     print("3. Show Details")
-    print("4. Visual Representation")
-    print("5. Show All Data")
-    print("6. Exit")
+    print("4. Update Details")
+    print("5. Visual Representation")
+    print("6. Show All Data")
+    print("7. Save data to CSV")
+    print("0. Exit")
+    print("_______________________________")
 
     choice = int(input("Enter your choice: "))
 
-
+    
     if choice == 1:
         name = input("Enter Name: ")
         weight = float(input("Enter Weight (kg): "))
@@ -36,16 +51,7 @@ while True:
 
         bmi, status = calculate_bmi(weight, height)
 
-        new_row = pd.DataFrame({
-            'Name': [name],
-            'Weight': [weight],
-            'Height': [height],
-            'BMI': [bmi],
-            'Status': [status]
-        })
-
-        dta = pd.concat([dta, new_row], ignore_index=True)
-        dta.to_csv("bmi_record.csv", index=False)
+        dta.loc[len(dta)] = [name,weight,height,bmi,status]
 
         print("Record added successfully!")
 
@@ -69,9 +75,51 @@ while True:
             print(record)
         else:
             print("Record not found!")
-
     
+    # Update details
+    #-----------------------------------------------------------------------
     elif choice == 4:
+        print()
+        print("_______________________________")
+        print(" Update details ")
+        print("1. Update Weight")
+        print("2. Update Height")
+        print("3. Update Name")
+        print("_______________________________")
+
+        choice_2 = int(input("Enter your choice: "))
+        p_name = input("Enter person name: ")
+        p_details = dta.loc[dta["Name"]==p_name]
+        indx = p_details.index[0]
+
+        if choice_2 == 1:
+            u_weight = int(input("Enter new weight: "))         #New weight
+            height = p_details["Height"]                        #Existing height
+            height = float(height.iloc[0])                      
+
+            p_name = p_details["Name"].values[0]
+            p_name = str(p_name)
+
+            print(height)
+
+            n_bmi, n_status = calculate_bmi(u_weight,height)
+
+            dta.loc[indx] = [p_name, u_weight, height, n_bmi, n_status]
+
+            print("Data updated successfully")
+
+
+
+
+
+
+
+
+
+
+    # ----------------------------------------------------------------------
+
+    elif choice == 5:
         if dta.empty:
             print("No data available for visualization!")
         else:
@@ -97,15 +145,18 @@ while True:
                 print("Invalid visualization choice!")
 
     
-    elif choice == 5:
+    elif choice == 6:
         if dta.empty:
             print("No records available!")
         else:
             print(" All BMI Records ")
             print(dta)
 
+    elif choice == 7:
+        dta.to_csv("bmi_record.csv", index=False)
+        print("Data is saved as CSV file successfully")
     
-    elif choice == 6:
+    elif choice == 0:
         print("Exiting program... All data saved.")
         break
 
